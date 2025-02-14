@@ -1,1 +1,1 @@
-# GEOG456
+ https://sbrigham-1996.github.io/GEOG456/
