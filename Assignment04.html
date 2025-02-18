@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+      
+
+        header {
+            background: #007bff;
+            color: #fff;
+            padding: 1.5rem 0;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1rem;
+        }
+      
+
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            transition: transform 0.2s ease-in-out;
+        }
+      
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        h1, h2, h3 {
+            margin: 0 0 1rem 0;
+        }
+      
+
+        p {
+            line-height: 1.6;
+            margin: 0 0 1rem 0;
+        }
+      </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Florida Population Data</title>
+    <script src="./floridaCounties.js"></script> <!-- Load JavaScript data -->
+</head>
+<body>
+    <h1>Florida populations by County for: 1970, 1980, 1990, 2000, 2014</h1>
+    <p>Open the browser console and type <i>data</i> to see the JSON.</p>
+
+    <script>
+        console.log(" Florida Population Data Loaded:", data); // Display the data in the console
+    </script>
+</body>
+</html>
