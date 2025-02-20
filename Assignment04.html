@@ -1,67 +1,64 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <style>
-        /* Global Styles */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
-      
-
-        header {
-            background: #007bff;
-            color: #fff;
-            padding: 1.5rem 0;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 1rem;
-        }
-      
-
-        .card {
-            background: #fff;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            margin-bottom: 1.5rem;
-            transition: transform 0.2s ease-in-out;
-        }
-      
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        h1, h2, h3 {
-            margin: 0 0 1rem 0;
-        }
-      
-
-        p {
-            line-height: 1.6;
-            margin: 0 0 1rem 0;
-        }
-      </style>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Florida Population Data</title>
-    <script src="./floridaCounties.js"></script> <!-- Load JavaScript data -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css"></link>
+  <script src="./floridaCounties.js"></script>
+  <title>Florida Population Data</title>
 </head>
 <body>
-    <h1>Florida populations by County for: 1970, 1980, 1990, 2000, 2014</h1>
-    <p>Open the browser console and type <i>data</i> to see the JSON.</p>
+  <h2 style="font-family: 'Verdana', sans-serif; color: #051206;">Florida Populations by County</h2>
+  <table id="mytable">
+    <tr>
+      <th>County Name</th>
+      <th>1970</th>
+      <th>1980</th>
+      <th>1990</th>
+      <th>2000</th>
+      <th>2010</th>
+      <th>2014</th>
+    </tr>
+  </table>
+  <script>
+    var table = document.getElementById('mytable');
 
-    <script>
-        console.log(" Florida Population Data Loaded:", data); // Display the data in the console
-    </script>
+    for (var i = 0; i < data.features.length; i++) {
+      var props = data.features[i].properties;
+  
+      var row = document.createElement('tr');
+      var cellCounty = document.createElement('td');
+      var cell1970 = document.createElement('td');
+      var cell1980 = document.createElement('td');
+      var cell1990 = document.createElement('td');
+      var cell2000 = document.createElement('td');
+      var cell2010 = document.createElement('td');
+      var cell2014 = document.createElement('td');
+
+ 
+      cellCounty.innerText = props.County;
+      cell1970.innerText = Number(props['1970']).toLocaleString();
+      cell1980.innerText = Number(props['1980']).toLocaleString();
+      cell1990.innerText = Number(props['1990']).toLocaleString();
+      cell2000.innerText = Number(props['2000']).toLocaleString();
+      cell2010.innerText = Number(props['2010']).toLocaleString();
+      cell2014.innerText = Number(props['2014']).toLocaleString();
+
+   
+      if (props.County === 'St Lucie' || props.County === 'St Johns') {
+        cellCounty.classList.add('highlight');
+      }
+      if (props['1970'] >= 100000) { cell1970.classList.add('blue'); }
+      if (props['1980'] >= 200000) { cell1980.classList.add('yellow'); }
+      if (props['1990'] >= 400000) { cell1990.classList.add('orange'); }
+      if (props['2000'] >= 1000000) { cell2000.classList.add('red'); }
+      if (props['2010'] >= 2000000) { cell2010.classList.add('red'); }
+      if (props['2014'] >= 3000000) { cell2014.classList.add('red'); }
+
+
+      row.append(cellCounty, cell1970, cell1980, cell1990, cell2000, cell2010, cell2014);
+      table.append(row);
+    }
+  </script>
 </body>
 </html>

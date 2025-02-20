@@ -1,0 +1,34 @@
+<style>
+    table {
+      font-family: Tahoma, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+      border-radius: 8px; 
+      overflow: hidden; 
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 10px;
+    }
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+    /* Custom classes for conditional coloring */
+    .highlight {
+      background-color: black;
+      color: white;
+    }
+    .blue {
+      background-color: blue;
+    }
+    .yellow {
+      background-color: yellow;
+    }
+    .orange {
+      background-color: orange;
+    }
+    .red {
+      background-color: red;
+    }
