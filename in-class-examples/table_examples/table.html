@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
+<script src="./Data.js"></script>
+</head>
+<body>
+
+
+<table>
+  <tr>
+    <tr>
+        <th>Name</th>
+        <th>Power Generated in 2019 (in GWh)</th>
+      </tr>
+  
+</table>
+
+<script>
+var x = document.getElementById('table')
+  
+  data.forEach(element => {makeCell(element)});
+
+    function makeCell(e) {
+      var myNewRow = document.createElement('tr');
+      var myNewCell1 = document.createElement('td');
+      var myNewCell2 = document.createElement('td');
+
+      myNewCell1.innerHTML = e.name;
+      myNewCell2.innerHTML = e.generation_gwh_2019;
+
+    // myNewCell2.innerHTML = Math.round([i].generation_gwh_2019 *100)/100;
+    // myNewCell2.innerHTML = checkType(data[i].generation_gwh_2019);
+    // myNewCell2.innerHTML = parseFloat(data[i].generation_gwh_2019).toFixed(2);
+
+
+
+    // if(data[i].generation_gwh_2019 > 39.7 ){ myNewCell2.style.backgroundColor = 'yellow'}
+    // if(data[i].generation_gwh_2019 <= 39.7 ){ myNewCell2.style.backgroundColor = 'grey'}
+    
+    // Color method using a function 
+    // myNewCell2.style.backgroundColor = getBackgroundColor(data[i].generation_gwh_2019)
+
+    //Color method using class
+    // myNewCell2.className = getClassName(data[i].generation_gwh_2019)
+
+    myNewRow.append(myNewCell1);
+    myNewRow.append(myNewCell2);
+    x.append(myNewRow);
+
+  } // The loop ends 
+  </script>
+</body>
+</html>

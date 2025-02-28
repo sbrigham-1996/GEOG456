@@ -1,34 +1,64 @@
-<style>
-    table {
-      font-family: Tahoma, sans-serif;
-      border-collapse: collapse;
-      width: 100%;
-      border-radius: 8px; 
-      overflow: hidden; 
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    }
-    td, th {
-      border: 1px solid #dddddd;
-      text-align: left;
-      padding: 10px;
-    }
-    tr:nth-child(even) {
-      background-color: #dddddd;
-    }
-    /* Custom classes for conditional coloring */
-    .highlight {
-      background-color: black;
-      color: white;
-    }
-    .blue {
-      background-color: blue;
-    }
-    .yellow {
-      background-color: yellow;
-    }
-    .orange {
-      background-color: orange;
-    }
-    .red {
-      background-color: red;
-    }
+body, p {
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 10px;
+  background-color: #e0d4ca;
+  color: #000000;  
+}
+h1, h2, h3 {
+  text-align: center;
+}
+h1 {
+  font-size: 2.5em;
+  color: #3b4f4f; 
+  margin-bottom: 10px;
+}
+h2 {
+  font-size: 1.8em;
+  color: #3b4f4f; 
+  margin: 10px 0;
+}
+
+h3 {
+  font-size: 1.2em;
+  color: #3b4f4f;
+  margin: 10px 0;
+}
+
+/* Map Container Styles */
+#map {
+  display: block;
+  margin: 20px auto;
+  width: 900px;
+  height: 500px;
+  border: 10px solid #1E90FF; 
+  box-shadow: 0 2px 8px rgba(200, 190, 190, 0.1);
+  border-radius: 10px;
+  padding: 10px;
+}
+.info.legend i {
+  width: 18px;
+  height: 18px;
+  float: left;
+  margin-right: 8px;
+  opacity: 0.7;
+
+}
+footer {
+  background-color: #1E90FF;
+  text-align: center;
+  padding: .1rem;
+  font-size: 0.9rem;
+  color: #0077cc;
+  margin-top: 1px;
+  border-top: .1px solid #ddd;
+}
+
+footer a {
+  color: #0077cc;
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
