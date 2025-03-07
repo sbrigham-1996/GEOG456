@@ -46,7 +46,7 @@ input[type="range"] {
 
 #info {
   flex: 1;
-  width: 300px;
+  width: 400px;
   padding: 10px;
   border: 2px solid black;
   background: rgba(255, 255, 255, 0.268); 
@@ -54,18 +54,18 @@ input[type="range"] {
   text-align: center;
 }
 
-.county-list {
+#counties {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
   text-align: center;
   border-top: 1px solid #ccc;
   padding-top: 5px;
 }
 
-.county-item {
+#column {
   padding: 5px;
   font-size: 14px;
   font-weight: bold;
