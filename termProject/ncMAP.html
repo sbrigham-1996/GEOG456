@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NC Counties Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+  </style>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="./ncCounties.js"></script> <!-- Your counties GeoJSON -->
+</head>
+<body>
+  <div id="map"></div>
+
+  <script>
+    // Initialize the map
+    var map = L.map('map').setView([35.5, -79.5], 7);
+
+    // Add basemap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Add counties
+    L.geoJSON(counties, {
+      style: {
+        color: "#444",
+        weight: 1,
+        fillColor: "#CCCCCC",
+        fillOpacity: 0.3
+      },
+      onEachFeature: function (feature, layer) {
+        layer.bindPopup(`<strong>${feature.properties.NAME || feature.properties.County}</strong>`);
+      }
+    }).addTo(map);
+  </script>
+</body>
+</html>
