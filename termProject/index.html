@@ -1,70 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NC County Boundaries</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NC Agriculture 2000–2020</title>
+
+
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin=""
   />
-  <style>
-    body {
-    background-image: url("parchmentpaper.jpg");
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-attachment: fixed;
-    height: 100vh;
-    width: 100w;
-}
-    #map {
-    height: min(90vh, 1200px); /* Responsive height, max at 1200px */
-    width: min(90vw, 1000px); /* Responsive width, max at 1000px */
-    margin: auto;
-    display: block;
-    border: 2px solid #000;
-    background-color: (128, 64, 0, 0.7);
-    background-repeat: no-repeat;
-    background-position: center;
-    background-attachment: fixed;
-    
-}
-      
-  </style>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+
+  <link rel="stylesheet" href="css/projectstyle.css"/>
+
+  <script src="data/wideStateFile.js"></script>    
+  <script src="data/long_county_crop.js"></script> 
 </head>
+
 <body>
+  <div id="page">
+    <div id="map"></div>
+    <aside id="sidebar">
+      <h1>NC Agriculture 2000–2020</h1>
+      <div id="sliderWrap">
+        <label><strong>Year: <span id="yearLabel">2000</span></strong></label><br/>
+        <input id="yearSlider" type="range" min="2000" max="2020" value="2000"/>
+      </div>
+      <h2 id="geoTitle">Top 10 state-crops</h2>
+      <ul id="cropList"></ul>
+      <div id="chartPane">
+        <canvas id="doughnutChart"></canvas>
+      </div>
+    </aside>
+  </div>
 
-<div id="map"></div>
+  <script>
+ 
+    [stateData, countyData].forEach(ds => {
+      ds.features = ds.features.filter(f =>
+        f.geometry &&
+        Array.isArray(f.geometry.coordinates) &&
+        (f.geometry.type==='Point'
+          ? f.geometry.coordinates.length===2
+          : f.geometry.coordinates.length>0)
+      );
+    });
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-        crossorigin=""></script>     
-<script src="northcarolinacounties.js"></script>
 
-<script>
-var map = L.map('map').setView([35.5, -79.0], 9);
-// https://tiles-eu.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg
-L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg?api_key=d979d5a9-296e-4e09-9de6-8f7d61993e91', {
-    maxZoom: 16,
-    attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> ' +
-                 '&copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> ' +
-                 '&copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> ' +
-                 '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
-L.geoJSON(nc, {
-    style: function() {
-        return {
-            color: '#39ff14',
-            weight: 2,
-            fill: false,
-            opacity: 1
-        };
+    function centroidOfFeature(f){
+      if(f.geometry.type==='Point'){
+        return [f.geometry.coordinates[1], f.geometry.coordinates[0]];
+      }
+      const bounds = L.geoJSON(f).getBounds();
+      return bounds.isValid() ? bounds.getCenter() : null;
     }
-}).addTo(map);
-</script>
 
+    function slugifyCrop(name){
+      return name.toLowerCase()
+                 .replace(/[\s\/]+/g,'_')
+                 .replace(/[^a-z0-9_]/g,'');
+    }
+
+    function getIcon(val, crop, sizeOverride){
+      if(!Number.isFinite(val)) return null;
+      const d = sizeOverride != null
+        ? sizeOverride
+        : (val<2000?8: val<4000?10: val<8000?12:
+           val<12000?15: val<15000?17: val<25000?20:
+           val<40000?22: val<55000?25: val<70000?28:
+           val<85000?30: val<100000?32:35);
+      return L.icon({
+        iconUrl: `svg/${slugifyCrop(crop)}.svg`,
+        iconSize: [d,d],
+        popupAnchor: [0,0]
+      });
+    }
+
+    function fillCropList(title, items){
+      document.getElementById('geoTitle').textContent = title;
+      const ul = document.getElementById('cropList');
+      ul.innerHTML = '';
+      Object.entries(items).forEach(([label,val])=>{
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${label}</strong>: $${val.toLocaleString()}`;
+        ul.appendChild(li);
+      });
+    }
+
+
+    const map = L.map('map').setView([35.5,-79.0],6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      maxZoom:19, attribution:'© OpenStreetMap'
+    }).addTo(map);
+
+    const stateLayer  = L.layerGroup().addTo(map),
+          countyLayer = L.layerGroup();
+
+    const palette = [
+      '#8FBF8F','#F2C057','#A57C52','#F28F3B','#6B8E23',
+      '#C2B280','#B0C4DE','#E9967A','#9ACD32','#DEB887'
+    ];
+
+    let chart;
+    (()=>{
+      const ctx = document.getElementById('doughnutChart').getContext('2d');
+      chart = new Chart(ctx,{
+        type:'doughnut',
+        data:{labels:[],datasets:[{data:[],backgroundColor:[]}]},
+        options:{responsive:true,legend:{position:'bottom'}}
+      });
+    })();
+
+
+    const stateGeo  = stateData,
+          countyGeo = countyData;
+    let currentYear = +document.getElementById('yearSlider').value;
+    document.getElementById('yearLabel').textContent = currentYear;
+
+    function updateData(){
+      const year = currentYear,
+            zoom = map.getZoom();
+
+      stateLayer.clearLayers();
+      countyLayer.clearLayers();
+
+      if(zoom < 9){
+
+        map.removeLayer(countyLayer);
+        map.addLayer(stateLayer);
+
+        const tops = stateGeo.features.map(f=>{
+          const p=f.properties, vals={};
+          Object.keys(p).forEach(k=>{
+            if(k.endsWith(`_${year}`) && +p[k]>0){
+              vals[k.split('_')[0]] = +p[k];
+            }
+          });
+          const top = Object.entries(vals).sort((a,b)=>b[1]-a[1])[0];
+          if(!top) return null;
+          return {
+            state:  p.NAME,
+            crop:   top[0],
+            val:    top[1],
+            center: centroidOfFeature(f)
+          };
+        }).filter(d=>d && d.center);
+
+        // 2) sort & take top 10
+        const top10 = tops.sort((a,b)=>b.val-a.val).slice(0,10);
+
+        // 3) render markers & build list/chart
+        const list={}, labels=[], data=[];
+        top10.forEach((d,i)=>{
+          L.marker(d.center,{icon:getIcon(d.val,d.crop)})
+           .bindPopup(`<b>${d.state}</b><br>${d.crop}: $${d.val.toLocaleString()}`)
+           .addTo(stateLayer);
+
+          list[`${i+1}. ${d.state} (${d.crop})`] = d.val;
+          labels.push(d.state);
+          data.push(d.val);
+        });
+
+        fillCropList('Top 10 states by crop-value', list);
+
+        chart.options.cutoutPercentage = 50;
+        chart.data.labels               = labels;
+        chart.data.datasets[0].data     = data;
+        chart.data.datasets[0].backgroundColor =
+          labels.map((_,i)=>palette[i%palette.length]);
+        chart.update();
+
+      } else {
+        // ── COUNTY MODE ──
+        map.removeLayer(stateLayer);
+        map.addLayer(countyLayer);
+
+        countyGeo.features.forEach(f=>{
+          if(+f.properties.year !== year) return;
+          const v = +f.properties.Value_num;
+          if(!Number.isFinite(v)) return;
+          const crop = f.properties.commodity_desc,
+                ctr  = centroidOfFeature(f),
+                icon = getIcon(v, crop);
+          if(ctr && icon){
+            L.marker(ctr,{icon})
+             .bindPopup(
+               `<b>${f.properties.county_name}, ${f.properties.state_name}</b><br>`+
+               `${crop}: ${v.toLocaleString()} ${f.properties.unit_desc}`
+             )
+             .addTo(countyLayer);
+          }
+        });
+        // keep the state chart & list as-is
+      }
+    }
+
+    // 8) Wire events & initial draw
+    document.getElementById('yearSlider')
+      .addEventListener('input', e=>{
+        currentYear = +e.target.value;
+        document.getElementById('yearLabel').textContent = currentYear;
+        updateData();
+      });
+    map.on('zoomend', updateData);
+    updateData();
+  </script>
 </body>
 </html>
