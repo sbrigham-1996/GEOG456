@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Florida Populations by County</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <link rel="stylesheet" href= "styles.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="./Florida_Population.js"></script>
+</head>
+<body>
+
+  <h2>Florida's Population<br>From:</br><br>1850 - 2020</br></h2>
+  <h3>Move the slider below to see populations by County</h3>
+<div id="slider-container">
+  <input id="year" type="range" min="1850" max="2020" step="10" value="1850" oninput="moveSlider(this.value)"></div>
+
+<div id="container">
+<div id="map"></div>
+<div id="info">
+<h3 id="daYear">Year: 1850</h3>
+<div id="counties" class="column">
+</div>
+</div>
+</div> 
+<script>
+
+const classification = [
+  {minValue: 2700000, color: "#800026"},
+  {minValue: 1000000, color: "#b10026"},
+  {minValue: 500000, color: "#e31a1c"},
+  {minValue: 250000, color: "#fc4e2a"},
+  {minValue: 100000, color: "#fd8d3c"},
+  {minValue: 50000, color: "#feb24c"},
+  {minValue: 25000, color: "#fed976"},
+  {minValue: 10000, color: "#ffeda0"},
+  {minValue: 5000, color: "#ffffcc"},
+  {minValue: 1000, color: "#ccebc5"},
+  {minValue: 500, color: "#a1d99b"},
+  {minValue: 100, color: "#41ab5d"}
+];
+function selectColorByValue(value) {
+  for (let i = 0; i < classification.length; i++) {
+    if (value >= classification[i].minValue) {
+      return classification[i].color;
+    }
+  }
+      return "d9d9d9";
+};
+  
+  const map = L.map('map', { attributionControl: false }).setView([27.99, -81.76], 6);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            maxZoom: 8,
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO'}).addTo(map);
+
+  var selectedYear = '1850';
+  var myInfo = document.getElementById('counties');
+
+  function style(feature) {
+    var population = feature.properties[selectedYear];
+      return {
+        fillColor: selectColorByValue(population),
+        weight: 1,
+        opacity: 0.5,
+        color: 'black',
+        fillOpacity: 0.7,
+      };
+};
+var myGeoJSON = L.geoJSON(floridaPop, {
+  style: style,
+  onEachFeature: onEachFeature
+}).addTo(map);
+ 
+
+  function addColumn(obj) {
+    var columnDiv = document.createElement("div");
+    var bgColor = selectColorByValue(obj.population);
+      columnDiv.className = "column";
+      columnDiv.style.color = (obj.population >= 100000) ? "white" : "black";
+      columnDiv.style.height = "30px"; 
+      columnDiv.style.width = "100%";
+      columnDiv.style.margin = "2px";
+      columnDiv.style.padding = "5px";
+      columnDiv.style.textAlign = "center";
+      columnDiv.style.fontWeight = "bold";
+      columnDiv.innerHTML = `${obj.county}: ${obj.population.toLocaleString()}`;
+   
+      columnDiv.style.backgroundColor = bgColor;
+      return columnDiv;
+};
+    function updatePopulationList(year) {
+      myInfo.innerHTML = ''; 
+
+      var sortedData = floridaPop.features
+        .map(feature => ({
+          county: feature.properties.County,
+          population: feature.properties[selectedYear] 
+}))
+        .sort((a, b) => b.population - a.population); 
+
+      sortedData.forEach(obj => {
+        var countyItem = addColumn(obj);
+        myInfo.append(countyItem);
+});
+};
+
+    function moveSlider(value) {
+      document.getElementById('daYear').textContent = 'Year: ' + value;
+      selectedYear = value;
+      
+      myGeoJSON.eachLayer(function(layer) {
+        layer.setStyle(style(layer.feature));
+      });
+
+      updatePopulationList(value);
+};
+function onEachFeature(feature, layer) {
+  layer.on('click', function(e) {
+    const countyName = feature.properties.County;
+    const population = feature.properties[selectedYear];
+    const popupContent = `<strong>${countyName}</strong><br>Population: ${population.toLocaleString()} people`;
+    layer.bindPopup(popupContent).openPopup();
+  });
+} 
+      window.onload = function() {
+      document.getElementById('year').value = 1850;
+      updatePopulationList('1850');
+};
+
+</script>
+<footer>
+  <p>Developed by <a href="https://github.com/sbrigham-1996/GEOG456" target="_blank">Spencer Brigham</a> &copy; 2025. All rights reserved.</p>
+  <p>Data and mapping powered by <a href="https://www.leafletjs.com" target="_blank">Leaflet</a> and other sources.</p>
+</footer>
+</body>
+</html>

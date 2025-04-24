@@ -1,0 +1,6 @@
+# Raw downloads
+data/raw/
+# Intermediate caches (optional)
+*.Rhistory
+*.Rproj.user
+.RData

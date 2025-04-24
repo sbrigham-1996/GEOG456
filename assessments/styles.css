@@ -1,0 +1,71 @@
+body, p {
+  font-family: 'Arial', sans-serif;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  background-color: #1e1e1e;
+  color: #f8f9fa;
+}
+
+h1, h2, h3 {
+  margin-top: 10px;
+  font-size: 24px;
+  color: #ffffff;
+}
+
+#map {
+  height: 500px;
+  width: 75%;
+  margin: 0;
+  justify-content: left;
+}
+
+#info {
+  width: 30%;
+  padding: 10px;
+  background-color: #f9f4ef;
+  border-left: 2px solid #ccc;
+  overflow-y: auto;
+}
+
+#slider-container {
+  width: 100%;
+  margin-bottom: 10px;
+}
+input[type="range"] {
+    width: 60%;
+    margin-top: 10px;
+}
+
+#container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+#counties {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: 400px;
+  overflow-y: auto;
+  text-align: center;
+  border-top: 1px solid #ccc;
+  padding-top: 5px;
+}
+
+#column {
+  padding: 5px;
+  font-size: 14px;
+  font-weight: bold;
+  border-bottom: 1px solid white;
+}
+
+
+
+
+  

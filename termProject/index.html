@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NC County Boundaries</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <style>
+    body {
+    background-image: url("parchmentpaper.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+    height: 100vh;
+    width: 100w;
+}
+    #map {
+    height: min(90vh, 1200px); /* Responsive height, max at 1200px */
+    width: min(90vw, 1000px); /* Responsive width, max at 1000px */
+    margin: auto;
+    display: block;
+    border: 2px solid #000;
+    background-color: (128, 64, 0, 0.7);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+    
+}
+      
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>     
+<script src="northcarolinacounties.js"></script>
+
+<script>
+var map = L.map('map').setView([35.5, -79.0], 9);
+// https://tiles-eu.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg
+L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg?api_key=d979d5a9-296e-4e09-9de6-8f7d61993e91', {
+    maxZoom: 16,
+    attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> ' +
+                 '&copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> ' +
+                 '&copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> ' +
+                 '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+L.geoJSON(nc, {
+    style: function() {
+        return {
+            color: '#39ff14',
+            weight: 2,
+            fill: false,
+            opacity: 1
+        };
+    }
+}).addTo(map);
+</script>
+
+</body>
+</html>

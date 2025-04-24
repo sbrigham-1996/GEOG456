@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles copy.css"></link>
+  <script src="./floridaDensity.js"></script>
+  <title>Florida Population Data</title>
+</head>
+<body>
+  <h2 style="font-family: 'Verdana', sans-serif; color: #051206;">Florida Population Densities by County</h2>
+  <table id="mytable">
+    <tr>
+      <th>NAME</th>
+      <th>1930</th>
+      <th>1940</th>
+      <th>1950</th>
+      <th>1960</th>
+      <th>1970</th>
+      <th>1980</th>
+      <th>1990</th>
+      <th>2000</th>
+      <th>2010</th>
+      <th>2020</th>
+    </tr>
+  </table>
+  <script>
+    var table = document.getElementById('mytable');
+
+    for (var i = 0; i < data.features.length; i++) {
+      var props = data.features[i].properties;
+  
+      var row = document.createElement('tr');
+      var cellNAME = document.createElement('td');
+      var cell1930 = document.createElement('td');
+      var cell1940 = document.createElement('td');
+      var cell1950 = document.createElement('td');
+      var cell1960 = document.createElement('td');
+      var cell1970 = document.createElement('td');
+      var cell1980 = document.createElement('td');
+      var cell1990 = document.createElement('td');
+      var cell2000 = document.createElement('td');
+      var cell2010 = document.createElement('td');
+      var cell2020 = document.createElement('td');
+
+ 
+      cellNAME.innerText = props.NAME;
+      cell1930.innerText = Number(props['1930']).toLocaleString();
+      cell1940.innerText = Number(props['1940']).toLocaleString();
+      cell1950.innerText = Number(props['1950']).toLocaleString();
+      cell1960.innerText = Number(props['1960']).toLocaleString();
+      cell1970.innerText = Number(props['1970']).toLocaleString();
+      cell1980.innerText = Number(props['1980']).toLocaleString();
+      cell1990.innerText = Number(props['1990']).toLocaleString();
+      cell2000.innerText = Number(props['2000']).toLocaleString();
+      cell2010.innerText = Number(props['2010']).toLocaleString();
+      cell2020.innerText = Number(props['2020']).toLocaleString();
+
+   
+      if (props.NAME === 'St Lucie' || props.NAME === 'St Johns') {
+        NAME.classList.add('highlight');
+      }
+      if (props['1930'] >= 100000) { cell1930.classList.add('blue'); }
+      if (props['1940'] >= 100000) { cell1940.classList.add('blue'); }
+      if (props['1950'] >= 100000) { cell1950.classList.add('blue'); }
+      if (props['1960'] >= 100000) { cell1960.classList.add('blue'); }
+      if (props['1970'] >= 100000) { cell1970.classList.add('blue'); }
+      if (props['1980'] >= 200000) { cell1980.classList.add('yellow'); }
+      if (props['1990'] >= 400000) { cell1990.classList.add('orange'); }
+      if (props['2000'] >= 1000000) { cell2000.classList.add('red'); }
+      if (props['2010'] >= 2000000) { cell2010.classList.add('red'); }
+      if (props['2020'] >= 3000000) { cell2020.classList.add('red'); }
+
+
+      row.append(cellNAME, cell1930, cell1940, cell1950, cell1960, cell1970, cell1980, cell1990, cell2000, cell2010, cell2020);
+      table.append(row);
+    }
+  </script>
+</body>
+</html>

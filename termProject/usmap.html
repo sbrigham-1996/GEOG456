@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NC Agriculture 2000–2020</title>
+
+  <!-- Leaflet & Chart.js -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+
+  <!-- Styles and Data -->
+  <link rel="stylesheet" href="projectstyle.css"/>
+  <!-- **1) Load your data** -->
+  <script src="wideStateFile.js"></script>    <!-- must define: var stateData = {...} -->
+  <script src="countyFileLong.js"></script>   <!-- must define: var countyData = {...} -->
+</head>
+<body>
+  <h1>NC Agriculture 2000–2020</h1>
+
+  <!-- Slider -->
+  <div style="text-align:center; margin-top:10px;">
+    <label><strong>Year: <span id="yearLabel">2000</span></strong></label><br/>
+    <input id="mySlider" type="range" min="2000" max="2020" step="1" value="2000"/>
+  </div>
+
+  <!-- Map & Chart -->
+  <div id="mapChartContainer">
+    <div id="mapContainer"><div id="map" style="height:500px;"></div></div>
+    <div id="chartContainer"><canvas id="myChart"></canvas></div>
+  </div>
+
+  <script>
+
+    const map = L.map('map').setView([35.5, -79.0], 6);
+    L.tileLayer(
+      'https://{s}.tile.thunderforest.com/pioneer/{z}/{x}/{y}{r}.png?apikey=YOUR_API_KEY',
+      { attribution:'&copy; Thunderforest, OSM', maxZoom:22 }
+    ).addTo(map);
+
+    const markerGroup = L.layerGroup().addTo(map);
+    let chart;
+
+   
+    const stateGeo  = window.stateData;
+    const countyGeo = window.countyData;
+
+
+    function getIcon(val,crop){
+      let d=8;
+      if      (val<2000)   d=8;
+      else if (val<4000)   d=10;
+      else if (val<8000)   d=12;
+      else if (val<12000)  d=15;
+      else if (val<15000)  d=17;
+      else if (val<25000)  d=20;
+      else if (val<40000)  d=22;
+      else if (val<55000)  d=25;
+      else if (val<70000)  d=28;
+      else if (val<85000)  d=30;
+      else if (val<100000) d=32;
+      else                  d=35;
+      const path = `svg/${crop.replace(/\s+/g,'_')}.svg`;
+      return L.icon({ iconUrl:path, iconSize:[d,d], popupAnchor:[0,0] });
+    }
+
+
+    const colorMapping = {
+      cotton:"#f7f7f7", wheat:"#F5DEB3", corn:"#fbec5d",
+      hay:"#A56A55", soybeans:"#5ced73", tobacco:"#715D47",
+      rice:"#e5e5d1", potatoes:"#d9b28c", lettuce:"#9dc183",
+      "sweet corn":"#ffeb3b", sugarcane:"#c7ea46", pineapples:"#ffda46",
+      tomatoes:"#ed1c24", almonds:"#c19a6b", strawberries:"#fc5a8d",
+      blueberries:"#4f86f7", apples:"#ff0800", cranberries:"#db143c",
+      grapes:"#6f2da8", peanuts:"#fcbf49", "maple syrup":"#d2691e"
+    };
+
+
+    const countyLayer = L.geoJSON(countyGeo, {
+      style: { color:'#888', weight:1, fillOpacity:0.05 },
+      onEachFeature(f,layer){ layer.bindTooltip(f.properties.county_name) }
+    });
+    const stateLayer = L.geoJSON(stateGeo, {
+      style: { color:'#555', weight:1, fillOpacity:0 },
+      onEachFeature(f,layer){ layer.bindTooltip(f.properties.NAME) }
+    });
+
+    function updateMap(year){
+      markerGroup.clearLayers();
+      const zoomedIn = map.getZoom() >= 10;
+
+      if(zoomedIn){
+        // counties
+        if(!map.hasLayer(countyLayer)) map.addLayer(countyLayer);
+        if( map.hasLayer(stateLayer))  map.removeLayer(stateLayer);
+
+        countyGeo.features
+          .filter(f=>f.properties.year===year)
+          .forEach(f=>{
+            const p=f.properties,
+                  [lng,lat]=f.geometry.coordinates,
+                  crop=p.commodity_desc.toLowerCase(),
+                  val=p.Value_num, unit=p.unit_desc,
+                  icon=getIcon(val,crop);
+            L.marker([lat,lng],{icon})
+             .bindPopup(
+               `<b>${p.county_name}, ${p.state_name}</b><br>`+
+               `${crop}: ${val.toLocaleString()} ${unit}`
+             ).addTo(markerGroup);
+          });
+
+      } else {
+        // states
+        if(!map.hasLayer(stateLayer))  map.addLayer(stateLayer);
+        if( map.hasLayer(countyLayer)) map.removeLayer(countyLayer);
+
+        stateGeo.features.forEach(f=>{
+          const props=f.properties;
+          // get center without Turf:
+          const tmp = L.geoJSON(f),
+                ctr = tmp.getBounds().getCenter(),
+                lat=ctr.lat, lng=ctr.lng;
+          Object.keys(props)
+            .filter(k=>k.endsWith(`_${year}`) && props[k]>0)
+            .forEach(key=>{
+              const crop=key.split('_')[0].toLowerCase(),
+                    val=props[key],
+                    icon=getIcon(val,crop);
+              L.marker([lat,lng],{icon})
+               .bindPopup(`<b>${props.NAME}</b><br>${crop}: ${val.toLocaleString()}`)
+               .addTo(markerGroup);
+            });
+        });
+      }
+    }
+
+ 
+    function updateChart(year){
+      const features = map.getZoom()>=10
+        ? countyGeo.features
+        : stateGeo.features;
+
+      const filtered = features.filter(f=>{
+        const p=f.properties;
+        if(p.year!==undefined) return p.year===year;
+        return Object.keys(p).some(k=>k.endsWith(`_${year}`)&&p[k]>0);
+      });
+
+      const totals={};
+      filtered.forEach(f=>{
+        const p=f.properties;
+        if(p.commodity_desc){
+          const c=p.commodity_desc.toLowerCase(),
+                v=p.Value_num||0;
+          totals[c]=(totals[c]||0)+v;
+        } else {
+          Object.keys(p)
+            .filter(k=>k.endsWith(`_${year}`))
+            .forEach(k=>{
+              const c=k.split('_')[0].toLowerCase();
+              totals[c]=(totals[c]||0)+p[k];
+            });
+        }
+      });
+
+      const labels = Object.keys(totals),
+            data   = labels.map(l=>totals[l]),
+            colors = labels.map(l=>colorMapping[l]||'#999'),
+            ctx    = document.getElementById('myChart').getContext('2d');
+      if(chart) chart.destroy();
+      chart = new Chart(ctx,{
+        type:'doughnut',
+        data:{labels,datasets:[{data,backgroundColor:colors}]},
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          title:{display:true,text:`Total by Crop (${year})`},
+          legend:{position:'bottom'}
+        }
+      });
+    }
+
+
+    document.addEventListener('DOMContentLoaded',()=>{
+      const slider=document.getElementById('mySlider'),
+            label =document.getElementById('yearLabel');
+      function redraw(){
+        const yr=+slider.value;
+        label.textContent=yr;
+        updateMap(yr);
+        updateChart(yr);
+      }
+      slider.addEventListener('input',redraw);
+      map.on('zoomend',redraw);
+      redraw();
+    });
+  </script>
+</body>
+</html>

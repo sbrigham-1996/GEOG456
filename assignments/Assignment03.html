@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Marker</title>
+</head>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+crossorigin=""></script>
+
+<style>
+    #map { height: 500px;  }
+</style>
+<body>
+
+    <div id="map"></div>
+    <script src="./febPoint.js"></script>
+    <script>
+
+var polksLand = [35.8338, -79.0964]    
+var map = L.map('map').setView(polksLand, 14);  
+var OSM = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                }).addTo(map);
+var Esri_WorldTopoMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+	attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
+                }).addTo(map);
+ var customIcon = L.icon({
+    iconUrl: 'https://pngimg.com/d/pickup_truck_PNG16282.png',
+    iconSize: [30, 30],      
+    iconAnchor: [25, 50],    
+    popupAnchor: [0, -50]});
+var marker = L.marker([35.8338, -79.0964], {icon: customIcon})
+ .addTo(map)
+     .bindPopup('This is my neighborhood')
+      .openPopup();
+//var marker = L.marker(polksLand).bindPopup("<b>Polks Landing</b>").addTo(map);
+//L.geoJSON(waypoints).addTo(map);
+
+function colorSelector(elev) {
+    if (elev < 120) {
+        return '#f1eef6';
+  } else if (elev <= 135) {
+        return '#74a9cf';
+  } else if (elev <= 145) {
+        return '#2b8cbe';
+  } else if (elev >= 155    ) {
+        return '#045a8d';
+   } else {
+         return '252525';
+    }
+    };
+
+
+function circleStyle (elev){
+var geojsonMarkerOptions = {
+    radius: 9,
+    fillColor: colorSelector(elev),//"#7BAFD4",
+    color: "#000",
+    weight: 1,
+    opacity: 1,
+    fillOpacity: 0.8
+    };
+return geojsonMarkerOptions
+}
+
+    
+    var myCircles = L.geoJSON(febPoint, {
+    pointToLayer: function (feature, latlng) {
+         console.log(feature);
+        return L.circleMarker(latlng, circleStyle(feature.properties.ele))
+           .bindPopup("Elevation: " + Math.trunc(feature.properties.ele) + " m")
+ }
+}).addTo(map);
+
+            var baseMaps = {
+                "Open Street Map": OSM,
+                "Esri Images": Esri_WorldTopoMap
+            };
+
+            var overlayMaps = {
+                "Waypoints": myCircles,
+                "Polks Landing": marker
+            };
+            var layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+</script>
+
+</body>
+</html>

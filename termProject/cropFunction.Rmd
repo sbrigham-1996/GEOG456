@@ -1,0 +1,99 @@
+---
+title: "cropFunction"
+author: "Spencer Brigham"
+date: "2025-04-11"
+output: html_document
+---
+
+## Load Libraries
+
+```{r}
+library(rnassqs)
+library(dplyr)
+library(readr)
+library(tidyverse)
+library(stringr)
+library(scales)
+```
+
+## Function built from cropScript
+# Swap out years to batch download all layers
+
+```{r}
+# Define the function
+get_top_crop_per_county <- function(year_choice, state_choice = "NC", api_key) {
+  
+  # Load the API key
+  nassqs_auth(api_key)
+
+  # Define parameters
+  paramsAcresHarvested <- list(
+    year = year_choice,
+    state_alpha = state_choice,
+    agg_level_desc = "COUNTY",
+    statisticcat_desc = "AREA HARVESTED"
+  )
+  
+  # Make the query
+  nc_crops_acresharvested_data <- nassqs(paramsAcresHarvested)
+  
+  # Clean up the data
+  nc_crops_acresharvested_clean <- nc_crops_acresharvested_data |>
+    select(year, county_name, statisticcat_desc, commodity_desc, unit_desc, Value) |>
+    arrange(year, county_name, statisticcat_desc, commodity_desc, unit_desc, Value)
+  
+  # Clean column names and keep Value as numeric
+  nc_crops_acresharvested_clean_names <- nc_crops_acresharvested_clean |>
+    mutate(
+      Year = year,
+      County = str_to_title(county_name),
+      Crop = str_to_title(commodity_desc),
+      Statistic = str_to_title(statisticcat_desc),
+      Unit = str_to_title(unit_desc),
+      Value = as.numeric(gsub(",", "", Value))  # convert to raw numeric
+    )
+  
+  # Select relevant columns
+  nc_crops_selected_acresharvested <- nc_crops_acresharvested_clean_names |>
+    select(Year, County, Crop, Unit, Value)
+  
+  # Filter out unwanted counties and remove duplicates
+  nc_acresharvested_filtered <- nc_crops_selected_acresharvested |>
+    filter(County != "Other (Combined) Counties") |>
+    distinct(Year, County, Crop, Unit, Value, .keep_all = TRUE)
+  
+  # Sum values for multiple reports per county/crop
+  nc_acresharvested_summarised <- nc_acresharvested_filtered |>
+    group_by(Year, County, Crop, Unit) |>
+    summarise(Value = sum(Value, na.rm = TRUE), .groups = "drop")
+  
+  # Group by County, Crop, and Value again to ensure clean aggregation
+  county_top_crop <- nc_acresharvested_summarised |>
+    group_by(Year, County, Crop, Unit, Value) |>
+    summarise(Value = sum(Value, na.rm = TRUE), .groups = "drop")
+  
+  # Select top crop per county
+  top_crop_per_county <- county_top_crop |>
+    group_by(County) |>
+    slice_max(order_by = Value, n = 1, with_ties = FALSE) |>
+    ungroup()
+  
+  # View result
+  print(top_crop_per_county)
+  
+  # Save to CSV
+  output_filename <- paste0("top_crop_per_county_acresharvested_", year_choice, ".csv")
+  write_csv(top_crop_per_county, output_filename)
+  
+  # Message
+  cat("Data saved to '", output_filename, "'\n", sep = "")
+  
+  # Return the result
+  return(top_crop_per_county)
+}
+
+# Example usage:
+my_api_key <- "9E6A687A-B7F5-3950-B4BA-8511C501D06B"
+top_crop_2022 <- get_top_crop_per_county(year_choice = "2022", state_choice = "NC", api_key = my_api_key)
+```
+
