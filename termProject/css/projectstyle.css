@@ -1,7 +1,8 @@
 html, body {
   height: 100%;
   margin: 0;
-  font: 14px/1.4 system-ui, sans-serif;
+  font: 14px/1.4 'EB Garamond', serif;
+  background-color: #f9f7f2;
 }
 
 #page {
@@ -21,10 +22,10 @@ html, body {
   border-left: 1px solid #ddd;
 }
 
-#sidebar h1 {
-  margin: 0;
-  font-size: 1.25rem;
-  color: #3366ff;
+#sidebar h1, #sidebar h2, #sidebar h3 {
+  margin: 0 0 0.5em 0;
+  color: #4b3e2e;
+  font-weight: bold;
 }
 
 #sliderWrap {
@@ -39,4 +40,37 @@ html, body {
 #chartPane {
   margin-top: 1rem;
   height: 260px;
+}
+
+#legend ul {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0.5em;
+}
+
+#legend li {
+  font-size: 0.9em;
+  margin: 2px 0;
+  position: relative;
+}
+
+#legend li span {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  border-radius: 3px;
+}
+
+#legend li:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 20px;
+  top: -5px;
+  background: #eee;
+  border: 1px solid #aaa;
+  font-size: 0.75em;
+  padding: 2px 6px;
+  white-space: nowrap;
+  z-index: 10;
 }
