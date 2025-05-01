@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>The Grand Harvest Atlas</title>
+  <title>The United States & Crop Production from 2000-2020</title>
 
   <!-- Antique font -->
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond&display=swap" rel="stylesheet">
@@ -38,7 +38,7 @@
       <div id="sliderWrap">
         <label><strong>Year: <span id="yearLabel">2000</span></strong></label><br/>
         <input id="yearSlider" type="range" min="2000" max="2020" value="2000"/>
-      </div>
+      </div>`
 
       <h2 id="geoTitle">Top 10 state-crops</h2>
       <ul id="cropList"></ul>
@@ -71,12 +71,13 @@
 const SIZE_CATEGORIES = {
   // State dollar‐values (billions USD)
   state: [
-    { name: 'small',  max: 2e9,  size: 15 },
-    { name: 'medium', max: 4e9,  size: 21 },
-    { name: 'large',  max: 8e9,  size: 27 },
-    { name: 'xl',     max: Infinity, size: 33 }
-  ],
-  // Tons 
+  { name: 'small', max: 1e9, size: 45 },
+  { name: 'medium', max: 4e9, size: 85 },
+  { name: 'large', max: 1e10, size: 115 },
+  { name: 'xl', max: Infinity, size: 140 }
+
+],
+ // Tons 
   ton: [
     { name: 'small',  max: 2_000,     size: 10 },
     { name: 'medium', max: 10_000,    size: 16 },
@@ -96,7 +97,7 @@ const SIZE_CATEGORIES = {
     { name: 'large',  max: 15e6,      size: 24 },
     { name: 'xl',     max: Infinity,  size: 32 }
   ]
-};
+}
     // 2) Helpers
     function centroidOfFeature(f) {
       if (f.geometry.type === 'Point') {
