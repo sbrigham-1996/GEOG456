@@ -3,19 +3,16 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>The United States & Crop Production from 2000-2020</title>
+  <title>The United States & Crop Production from 2000–2020</title>
 
-  <!-- Antique font -->
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.typekit.net/nov5kpz.css">" rel="stylesheet">
+
   <!-- Main stylesheet -->
   <link rel="stylesheet" href="css/projectstyle.css"/>
 
   <!-- Leaflet CSS & JS -->
-  <link rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        crossorigin=""/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-          crossorigin=""></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
   <!-- Chart.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
@@ -23,22 +20,23 @@
   <!-- Data -->
   <script src="data/wideStateFile.js"></script>
   <script src="data/long_county_crop.js"></script>
-
+  <script src="data/stateColors.js"></script>
 </head>
+
 <body>
   <div id="page">
     <div id="map"></div>
     <aside id="sidebar">
       <h1>
-       Crop Production in the USA
-       Thruough Time and Space
-       Zoom in to see county-level data:
+        Crop Production in the USA<br/>
+        Through Time and Space<br/>
+        <small>Zoom in to see county-level data:</small>
       </h1>
 
       <div id="sliderWrap">
         <label><strong>Year: <span id="yearLabel">2000</span></strong></label><br/>
         <input id="yearSlider" type="range" min="2000" max="2020" value="2000"/>
-      </div>`
+      </div>
 
       <h2 id="geoTitle">Top 10 state-crops</h2>
       <ul id="cropList"></ul>
@@ -55,7 +53,7 @@
   </div>
 
   <script>
-    // 1) Clean geometries
+    // Filter invalid geometries
     [stateData, countyData].forEach(ds => {
       ds.features = ds.features.filter(f =>
         f.geometry &&
@@ -65,40 +63,34 @@
           : f.geometry.coordinates.length > 0)
       );
     });
-// ——————————————————————
-// Icon size categories 
-// ——————————————————————
-const SIZE_CATEGORIES = {
-  // State dollar‐values (billions USD)
-  state: [
-  { name: 'small', max: 1e9, size: 45 },
-  { name: 'medium', max: 4e9, size: 85 },
-  { name: 'large', max: 1e10, size: 115 },
-  { name: 'xl', max: Infinity, size: 140 }
 
-],
- // Tons 
-  ton: [
-    { name: 'small',  max: 2_000,     size: 10 },
-    { name: 'medium', max: 10_000,    size: 16 },
-    { name: 'large',  max: 50_000,    size: 24 },
-    { name: 'xl',     max: Infinity,  size: 32 }
-  ],
+    const SIZE_CATEGORIES = {
+      state: [
+        { name: 'small', max: 1e9, size: 45 },
+        { name: 'medium', max: 4e9, size: 85 },
+        { name: 'large', max: 1e10, size: 115 },
+        { name: 'xl', max: Infinity, size: 140 }
+      ],
+      ton: [
+        { name: 'small', max: 2_000, size: 10 },
+        { name: 'medium', max: 10_000, size: 16 },
+        { name: 'large', max: 50_000, size: 24 },
+        { name: 'xl', max: Infinity, size: 32 }
+      ],
+      lb: [
+        { name: 'small', max: 1e6, size: 10 },
+        { name: 'medium', max: 20e6, size: 16 },
+        { name: 'large', max: 100e6, size: 24 },
+        { name: 'xl', max: Infinity, size: 32 }
+      ],
+      bushel: [
+        { name: 'small', max: 1e6, size: 12 },
+        { name: 'medium', max: 5e6, size: 18 },
+        { name: 'large', max: 15e6, size: 24 },
+        { name: 'xl', max: Infinity, size: 32 }
+      ]
+    };
 
-  lb: [
-    { name: 'small',  max: 1e6,       size: 10 },
-    { name: 'medium', max: 20e6,      size: 16 },
-    { name: 'large',  max: 100e6,     size: 24 },
-    { name: 'xl',     max: Infinity,  size: 32 }
-  ],
-  bushel: [
-    { name: 'small',  max: 1e6,       size: 12 },
-    { name: 'medium', max: 5e6,       size: 18 },
-    { name: 'large',  max: 15e6,      size: 24 },
-    { name: 'xl',     max: Infinity,  size: 32 }
-  ]
-}
-    // 2) Helpers
     function centroidOfFeature(f) {
       if (f.geometry.type === 'Point') {
         return [f.geometry.coordinates[1], f.geometry.coordinates[0]];
@@ -120,14 +112,8 @@ const SIZE_CATEGORIES = {
         : `$${val.toLocaleString()}`;
     }
 
-    // deterministic color per state
     function stateColor(stateName) {
-      let hash = 0;
-      for (let i = 0; i < stateName.length; i++) {
-        hash = stateName.charCodeAt(i) + ((hash << 5) - hash);
-      }
-      const hue = Math.abs(hash) % 360;
-      return `hsl(${hue},60%,50%)`;
+      return STATE_COLORS[stateName] || '#ccc';
     }
 
     function fillCropList(title, items) {
@@ -152,51 +138,57 @@ const SIZE_CATEGORIES = {
       });
     }
 
-    function getIcon(val, crop, unit = null, sizeOverride = null) {
-  if (!Number.isFinite(val)) return null;
+    function getIcon(val, crop, unit = null, stateName = '') {
+      if (!Number.isFinite(val)) return null;
 
-  // 1) If someone forced an override size, respect it
-  if (sizeOverride != null) {
-    return makeIcon(sizeOverride, crop);
-  }
+      const list = unit == null
+        ? SIZE_CATEGORIES.state
+        : (unit.toLowerCase().includes('ton')   ? SIZE_CATEGORIES.ton
+         : unit.toLowerCase().includes('lb')    ? SIZE_CATEGORIES.lb
+         : unit.toLowerCase().includes('bushel')? SIZE_CATEGORIES.bushel
+         : SIZE_CATEGORIES.ton);
 
-  // 2) Choose the right category list: state vs. unit-based
-  const list = unit == null
-    ? SIZE_CATEGORIES.state
-    : (unit.toLowerCase().includes('ton')   ? SIZE_CATEGORIES.ton
-     : unit.toLowerCase().includes('lb')    ? SIZE_CATEGORIES.lb
-     : unit.toLowerCase().includes('bushel')? SIZE_CATEGORIES.bushel
-     : SIZE_CATEGORIES.ton // fallback
-    );
+      const bucket = list.find(b => val <= b.max);
+      return makeIcon(bucket.size, crop, stateName);
+    }
 
-  // 3) Find the first bucket where val <= max
-  const bucket = list.find(b => val <= b.max);
+    function makeIcon(px, crop, stateName = '') {
+      const slug = slugifyCrop(crop);
+      const url  = `svg/${slug}.svg`;
+      const borderColor = stateColor(stateName);
 
-  // 4) Build the icon
-  return makeIcon(bucket.size, crop);
-}
+      const html = `
+        <div style="
+          width:${px}px;
+          height:${px}px;
+          border:3px solid ${borderColor};
+          border-radius:50%;
+          background:url(${url}) no-repeat center center;
+          background-size:contain;
+          box-shadow:0 0 3px rgba(0,0,0,0.5);
+        " title="${crop} (${stateName})"></div>
+      `;
 
-// Helper to create an L.icon with a given px size
-function makeIcon(px, crop) {
-  const slug = slugifyCrop(crop);
-  const url  = `svg/${slug}.svg`;
-  console.log('SVG URL →', url);  // helps you verify filenames
-  return L.icon({
-    iconUrl:   url,
-    iconSize:  [px, px],
-    popupAnchor:[0, 0]
-  });
-}
+      return L.divIcon({
+        html,
+        className: 'custom-crop-icon',
+        iconSize: [px, px],
+        popupAnchor: [0, 0]
+      });
+    }
 
-    // 4) Map & layers
     const map = L.map('map').setView([39, -98.5], 4);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-      maxZoom:19, attribution:'© OpenStreetMap'
+      maxZoom: 19, attribution: '© OpenStreetMap'
     }).addTo(map);
-    const stateLayer  = L.layerGroup().addTo(map),
+    const stateLayer = L.layerGroup().addTo(map),
           countyLayer = L.layerGroup();
 
-    // 5) Chart setup
+    const stateGeo  = stateData,
+          countyGeo = countyData;
+    let currentYear = +document.getElementById('yearSlider').value;
+    document.getElementById('yearLabel').textContent = currentYear;
+
     const palette = ['#8FBF8F','#F2C057','#A57C52','#F28F3B','#6B8E23','#C2B280','#B0C4DE','#E9967A','#9ACD32','#DEB887'];
     let chart;
     (() => {
@@ -208,17 +200,10 @@ function makeIcon(px, crop) {
       });
     })();
 
-    const stateGeo  = stateData,
-          countyGeo = countyData;
-    let currentYear = +document.getElementById('yearSlider').value;
-    document.getElementById('yearLabel').textContent = currentYear;
-
-    // 6) Main update function
     function updateData() {
       const year = currentYear,
             zoom = map.getZoom();
 
-      // a) All states’ top crop
       const tops = stateGeo.features.map(f => {
         const p = f.properties,
               vals = {};
@@ -236,10 +221,9 @@ function makeIcon(px, crop) {
         return center ? { state: p.NAME, crop, val, center } : null;
       }).filter(d=>d);
 
-      // b) Top-10 chart & sidebar
       const top10 = tops.slice().sort((a,b)=>b.val-a.val).slice(0,10);
       const stateColorMap = {}, list = {}, labels = [], data = [];
-      top10.forEach(d=>{
+      top10.forEach(d => {
         stateColorMap[d.state] = stateColor(d.state);
         list[`${labels.length+1}. ${d.state} (${d.crop})`] = d.val;
         labels.push(d.state);
@@ -247,13 +231,11 @@ function makeIcon(px, crop) {
       });
       fillCropList('Top 10 states by crop-value', list);
       updateStateLegend(stateColorMap);
-      chart.data.labels               = labels;
-      chart.data.datasets[0].data     = data;
-      chart.data.datasets[0].backgroundColor =
-        labels.map(s => stateColorMap[s]);
+      chart.data.labels = labels;
+      chart.data.datasets[0].data = data;
+      chart.data.datasets[0].backgroundColor = labels.map(s => stateColorMap[s]);
       chart.update();
 
-      // c) Clear & render markers
       stateLayer.clearLayers();
       countyLayer.clearLayers();
 
@@ -261,35 +243,31 @@ function makeIcon(px, crop) {
         map.removeLayer(countyLayer);
         map.addLayer(stateLayer);
         tops.forEach(d => {
-          L.marker(d.center, { icon: getIcon(d.val, d.crop) })
+          L.marker(d.center, { icon: getIcon(d.val, d.crop, null, d.state) })
            .bindPopup(`<b>${d.state}</b><br>${d.crop}: ${formatStateValue(d.val)}`)
            .addTo(stateLayer);
         });
       } else {
         map.removeLayer(stateLayer);
         map.addLayer(countyLayer);
-        countyGeo.features.forEach(f=>{
+        countyGeo.features.forEach(f => {
           if (+f.properties.year !== year) return;
           const crop = f.properties.commodity_desc;
           if (crop === 'Hay / Haylage') return;
-          const v    = +f.properties.Value_num;
+          const v = +f.properties.Value_num;
           if (!Number.isFinite(v)) return;
-          const unit = f.properties.unit_desc||'',
-                ctr  = centroidOfFeature(f),
-                icon = getIcon(v, crop, unit);
+          const unit = f.properties.unit_desc || '';
+          const ctr = centroidOfFeature(f);
+          const icon = getIcon(v, crop, unit);
           if (ctr && icon) {
             L.marker(ctr, { icon })
-             .bindPopup(
-               `<b>${f.properties.county_name}, ${f.properties.state_name}</b><br>`+
-               `${crop}: ${v.toLocaleString()} ${unit}`
-             )
+             .bindPopup(`<b>${f.properties.county_name}, ${f.properties.state_name}</b><br>${crop}: ${v.toLocaleString()} ${unit}`)
              .addTo(countyLayer);
           }
         });
       }
     }
 
-    // 7) Events & initial draw
     document.getElementById('yearSlider')
       .addEventListener('input', e => {
         currentYear = +e.target.value;
