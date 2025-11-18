@@ -1,0 +1,27 @@
+Author	Smith, Karl
+Date	1953
+Short Title	North Carolina : old north state
+Publisher	Karl Smith
+Publisher Location	Greensboro, N.C.
+Type	Separate Map
+Obj Height cm	37
+Obj Width cm	51
+Scale 1	1,650,000
+Note	Pictorial map, hand colored. First published in 1930. Representing cities, historical sites and events, monuments, historic ships, Compass rose, agriculture and industry, with decorative cartouche with the state seal at center. Includes vignettes of landmarks, and historical events at top panel.
+State/Province	North Carolina
+Subject	Pictorial map
+Subject	Historical
+Full Title	North Carolina : old north state. Karl Smith. Copyrighted 1953 by Karl Smith, Greensboro, N.C. (inset) Chronology of important historical events. with (lyrics to) The Old North State.
+List No	9925.000
+Publication Author	Smith, Karl
+Pub Date	1953
+Pub Title	North Carolina : old north state. Karl Smith. Copyrighted 1953 by Karl Smith, Greensboro, N.C. (inset) Chronology of important historical events. with (lyrics to) The Old North State.
+Pub Note	See note field above.
+Pub List No	9925.000
+Pub Type	Separate Map
+Pub Height cm	37
+Pub Width cm	51
+Image No	9925000.jp2
+Download 1	<a href=https://www.davidrumsey.com/rumsey/download.pl?image=/162/9925000.jp2 target=_blank>Full Image Download in JP2 Format</a>
+Download 2	<a href="https://www.extensis.com/support/geoviewer-9" target="_blank">GeoViewer for JP2 and SID files</a>
+Authors	Smith, Karl
