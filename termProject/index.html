@@ -9,6 +9,76 @@
 
   <!-- Main stylesheet -->
   <link rel="stylesheet" href="css/projectstyle.css"/>
+  <style>
+    body {
+      background-color: #a4c8f0; /* soft ocean blue to echo the Atlantic Ocean tiles */
+    }
+    #sidebar {
+      background: linear-gradient(to bottom, rgba(164, 200, 240, 0.96), rgba(164, 200, 240, 0.9));
+      backdrop-filter: blur(2px);
+    }
+    /* Remove default bullets and padding from the crop list */
+    #cropList {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    /* Style each list item for a card-like look */
+    #cropList li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      border-radius: 6px;
+      background-color: rgba(240, 247, 255, 0.95);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    /* Slightly darker background on every other row */
+    #cropList li:nth-child(odd) {
+      background-color: rgba(225, 238, 252, 0.95);
+    }
+    /* Give chart and legend panels a card-style appearance */
+    #chartPane,
+    #legend {
+      padding: 10px;
+      background-color: rgba(240, 247, 255, 0.9);
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 10px;
+    }
+    /* Turn the state color legend into a responsive grid of items */
+    #stateColorLegend {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 6px;
+    }
+    #stateColorLegend li {
+      display: flex;
+      align-items: center;
+      font-size: 0.9rem;
+      background-color: rgba(245, 245, 245, 0.9);
+      padding: 4px 6px;
+      border-radius: 4px;
+    }
+    #stateColorLegend li span {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 6px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    /* Style the year slider to be full width with a subtle accent color */
+    #sliderWrap input[type="range"] {
+      width: 100%;
+      accent-color: #88a; /* adjust to complement your palette */
+      margin-top: 4px;
+    }
+  </style>
 
   <!-- Leaflet CSS & JS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
@@ -192,13 +262,55 @@
     const palette = ['#8FBF8F','#F2C057','#A57C52','#F28F3B','#6B8E23','#C2B280','#B0C4DE','#E9967A','#9ACD32','#DEB887'];
     let chart;
 
-    // Horizontal bar chart (replacing doughnut)
     (() => {
       const ctx = document.getElementById('doughnutChart').getContext('2d');
       chart = new Chart(ctx, {
-        type:'doughnut',
-        data:{labels:[],datasets:[{data:[],backgroundColor:[]}]},
-        options:{responsive:true,legend:{position:'bottom'}}
+        type: 'horizontalBar',
+        data: {
+          labels: [],
+          datasets: [{
+            data: [],
+            backgroundColor: [],
+            borderColor: [],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          legend: {
+            display: false
+          },
+          scales: {
+            xAxes: [{
+              ticks: {
+                beginAtZero: true,
+                callback: function(value) {
+                  return value >= 1e9
+                    ? '$' + (value / 1e9).toFixed(1) + 'B'
+                    : '$' + (value / 1e6).toFixed(0) + 'M';
+                }
+              },
+              scaleLabel: {
+                display: true,
+                labelString: 'Crop value'
+              }
+            }],
+            yAxes: [{
+              ticks: {
+                fontSize: 12
+              },
+              barPercentage: 0.7
+            }]
+          },
+          tooltips: {
+            callbacks: {
+              label: function(tooltipItem, data) {
+                const value = data.datasets[0].data[tooltipItem.index];
+                return 'Value: ' + value.toLocaleString();
+              }
+            }
+          }
+        }
       });
     })();
 
@@ -238,6 +350,7 @@
       chart.data.labels = labels;
       chart.data.datasets[0].data = data;
       chart.data.datasets[0].backgroundColor = labels.map(s => stateColorMap[s]);
+      chart.data.datasets[0].borderColor    = labels.map(s => stateColorMap[s]);
       chart.update();
 
       stateLayer.clearLayers();
